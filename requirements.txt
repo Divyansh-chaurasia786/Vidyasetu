@@ -11,3 +11,4 @@ SQLAlchemy>=1.4
 Pillow>=9.0
 Flask-WTF>=1.0
 gunicorn>=20.1.0
+itsdangerous>=2.0
