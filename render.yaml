@@ -6,7 +6,7 @@ services:
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:create_app
     envVars:
       - key: SECRET_KEY
-        value: your-secret-key-here
+        value: dev-secret-key-change-in-production
       - key: DATABASE_URI
         value: sqlite:///vidyasetu.db
       - key: MAIL_USERNAME
