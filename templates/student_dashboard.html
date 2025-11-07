@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Vidyasetu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/student_dashboard.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Vidyasetu Logo" class="logo-image">
+                    <span>Vidyasetu</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </li>
+                    <li class="nav-item" data-section="profile">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </li>
+                    <li class="nav-item" data-section="courses">
+                        <i class="fas fa-book"></i>
+                        <span>Courses</span>
+                    </li>
+                    <li class="nav-item" data-section="certificates">
+                        <i class="fas fa-certificate"></i>
+                        <span>Certificates</span>
+                    </li>
+                    <li class="nav-item" data-section="payments">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </li>
+                    <li class="nav-item" data-section="referrals">
+                        <i class="fas fa-gift"></i>
+                        <span>Referrals</span>
+                    </li>
+                </ul>
+
+                <div class="sidebar-footer">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="{{ url_for('main.home') }}">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('auth.logout') }}">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge"></span>
+                    </div>
+                    <div class="notification-dropdown">
+                        <div class="notification-dropdown-header">
+                            <h4>Notifications</h4>
+                            <a href="#" id="clear-all-notifications">Clear All</a>
+                        </div>
+                        <div class="notification-list" id="notification-list">
+                            <!-- Notifications will be populated here -->
+                        </div>
+                        <div class="notification-dropdown-footer">
+                            <a href="#" id="view-all-notifications">View All</a>
+                        </div>
+                    </div>
+                    <div class="user-profile" id="user-profile-clickable">
+                        <img src="{{ url_for('static', filename='uploads/profile_pics/' + (current_user.profile_image or 'default_user.png')) }}" alt="Profile" class="user-avatar">
+                        <div class="user-info">
+                            <span class="user-name">{{ current_user.username }}</span>
+                            <span class="user-role">Student</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="welcome-section">
+                        <h2>Welcome back, {{ current_user.username }}!</h2>
+                        <p>Here's an overview of your learning progress</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ enrollments | selectattr('status', 'equalto', 'active') | list | length }}</h3>
+                                <p>Active Enrollments</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ enrollments | selectattr('status', 'equalto', 'pending') | list | length }}</h3>
+                                <p>Pending Approvals</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ certificates | length }}</h3>
+                                <p>Certificates Earned</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ payments | selectattr('status', 'equalto', 'completed') | list | length }}</h3>
+                                <p>Payments Made</p>
+                                {% set refunded_total = (payments | selectattr('status', 'equalto', 'refunded') | sum(attribute='amount')) %}
+                                {% if refunded_total > 0 %}
+                                <div class="refunded-info">
+                                    <small>Refunded: ₹{{ refunded_total }}</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ referral.code if referral else 'N/A' }}</h3>
+                                <p>Referral Code</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <div class="section-header">
+                            <h3>Recent Activity</h3>
+                        </div>
+                        <div class="activity-list">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <h4>No recent activity</h4>
+                                <p>Start learning to see your activity here</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile-section" class="content-section">
+                    <div class="section-header">
+                        <h3>My Profile</h3>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-header">
+                        <div class="profile-avatar">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + (current_user.profile_image or 'default_user.png')) }}" alt="Profile Picture" id="profile-avatar-img">
+                                <form action="{{ url_for('student.student_edit_profile') }}" method="POST" enctype="multipart/form-data" id="avatar-upload-form">
+                                    <input type="hidden" name="ajax" value="1">
+                                    <input type="file" name="profile_image" id="avatar-upload-input" style="display: none;">
+                                    <button type="button" class="avatar-upload-btn" onclick="document.getElementById('avatar-upload-input').click();">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="profile-info">
+                                <h4>{{ current_user.username }}</h4>
+                                <p>Student Account</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="detail-row">
+                                <label>Username</label>
+                                <span>{{ current_user.username }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Email</label>
+                                <span>{{ current_user.email }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Mobile Number</label>
+                                <span>{{ current_user.mobile_number or 'Not provided' }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Account Status</label>
+                                <span class="status-badge status-{{ current_user.status }}">{{ current_user.status.title() }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Member Since</label>
+                                <span>{{ current_user.created_on.strftime('%B %Y') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Password</label>
+                                <button class="btn btn-secondary" id="reset-password-btn">Reset Password</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Courses Section -->
+                <section id="courses-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Courses</h3>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="courseSearch" placeholder="Search courses...">
+                        </div>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="category-filters">
+                        <button class="filter-btn active" data-category="all">All</button>
+                        <button class="filter-btn" data-category="basic-computing">Basic Computing</button>
+                        <button class="filter-btn" data-category="programming">Programming</button>
+                        <button class="filter-btn" data-category="data-science-ai">Data Science & AI</button>
+                        <button class="filter-btn" data-category="cybersecurity">Cybersecurity</button>
+                        <button class="filter-btn" data-category="design-animation">Design & Animation</button>
+                        <button class="filter-btn" data-category="digital-marketing">Digital Marketing</button>
+                        <button class="filter-btn" data-category="hardware">Hardware</button>
+                        <button class="filter-btn" data-category="accounting">Accounting</button>
+                    </div>
+
+                    <div class="courses-grid">
+                        {% if courses %}
+                            {% set category_mapping = {
+                                'Basic Computer Skills': 'basic-computing',
+                                'Programming': 'programming',
+                                'Data Science & AI': 'data-science-ai',
+                                'Cybersecurity': 'cybersecurity',
+                                'Design & Animation': 'design-animation',
+                                'Digital Marketing': 'digital-marketing',
+                                'Hardware': 'hardware',
+                                'Accounting': 'accounting'
+                            } %}
+                            {% for course in courses %}
+                                {% set enrollment_status = 'none' %}
+                                {% set enrollment = none %}
+                                {% for e in enrollments %}
+                                    {% if e.course_id == course.id %}
+                                        {% set enrollment_status = e.status %}
+                                        {% set enrollment = e %}
+                                    {% endif %}
+                                {% endfor %}
+                                <div class="course-card {{ 'enrolled' if enrollment_status == 'active' else '' }}" data-category="{{ category_mapping.get(course.category, 'basic-computing') }}">
+                                    <div class="course-image">
+                                        <img src="{{ url_for('static', filename='images/' + course.image_file) }}" alt="{{ course.title }}">
+                                    </div>
+                                    <div class="course-content">
+                                        <h4>{{ course.title }}</h4>
+                                        <p>{{ course.description }}</p>
+                                        {% if enrollment_status == 'active' %}
+                                        <div class="enrollment-info">
+                                            <span class="enrollment-date">Enrolled: {{ enrollment.enrolled_on.strftime('%B %d, %Y') }}</span>
+                                            <span class="enrollment-status status-{{ enrollment.status }}">{{ enrollment.status.title() }}</span>
+                                        </div>
+                                        {% elif enrollment_status == 'pending' %}
+                                        <div class="enrollment-info">
+                                            <span class="enrollment-date">Enrollment Requested: {{ enrollment.enrolled_on.strftime('%B %d, %Y') }}</span>
+                                            <span class="enrollment-status status-pending">Pending Approval</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="course-footer">
+                                            <span class="course-price">₹{{ course.fee }}</span>
+                                            {% if enrollment_status == 'active' %}
+                                            <span class="status-badge status-active">Enrolled</span>
+                                            {% elif enrollment_status == 'pending' %}
+                                            <span class="status-badge status-pending">Approval Pending</span>
+                                            {% else %}
+                                            <form action="/student/enroll/{{ course.id }}" method="POST" class="enroll-form">
+                                                <button type="submit" class="btn btn-primary enroll-btn">Enroll</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-book"></i>
+                                <h4>No courses available</h4>
+                                <p>Courses will be added soon</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Certificates Section -->
+                <section id="certificates-section" class="content-section">
+                    <div class="section-header">
+                        <h3>My Certificates</h3>
+                    </div>
+
+                    <div class="certificates-grid">
+                        {% if certificates %}
+                            {% for cert in certificates %}
+                            <div class="certificate-card">
+                                <div class="certificate-icon">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div class="certificate-content">
+                                    <h4>{{ cert.course_title }}</h4>
+                                    <p>Earned on {{ cert.date.strftime('%B %d, %Y') }}</p>
+                                    <a href="{{ url_for('student.student_download_certificate', cert_id=cert.id) }}" class="btn btn-secondary">Download</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-certificate"></i>
+                                <h4>No certificates yet</h4>
+                                <p>Complete courses to earn certificates</p>
+                                <a href="{{ url_for('main.courses') }}" class="btn btn-primary">Browse Courses</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Payments Section -->
+                <section id="payments-section" class="content-section">
+                    <div class="section-header">
+                        <h3>My Payments</h3>
+                    </div>
+
+                    <!-- Unpaid Courses -->
+                    {% if enrollment_dues %}
+                    <div class="payments-pending">
+                        <h4>Pending Payments</h4>
+                        <div class="payments-list">
+                            {% for enrollment_id, due_amount in enrollment_dues.items() %}
+                                {% set enrollment = enrollments | selectattr('id', 'equalto', enrollment_id) | first %}
+                                <div class="payment-item pending">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="payment-content">
+                                        <div class="payment-course">{{ enrollment.course.title }}</div>
+                                        <div class="payment-amount">₹{{ due_amount }}</div>
+                                        <div class="payment-status">
+                                            <span class="status-badge status-pending">Payment Due</span>
+                                        </div>
+                                        <button class="btn btn-primary pay-btn" data-enrollment-id="{{ enrollment.id }}" data-amount="{{ due_amount }}" data-course="{{ enrollment.course.title }}">
+                                            <i class="fas fa-credit-card"></i>
+                                            Pay Now
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Payment History -->
+                    <div class="payments-history">
+                        <h4>Payment History</h4>
+                        <div class="payments-list">
+                            {% set completed_payments = payments | selectattr('status', 'equalto', 'completed') | list %}
+                            {% if completed_payments %}
+                                {% for payment in completed_payments %}
+                                <div class="payment-item">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <div class="payment-content">
+                                        {% if payment.enrollment %}
+                                        <div class="payment-course">{{ payment.enrollment.course.title }}</div>
+                                        {% endif %}
+                                        <div class="payment-amount">₹{{ payment.amount }}</div>
+                                        <div class="payment-status">
+                                            <span class="status-badge status-{{ payment.status }}">{{ payment.status.title() }}</span>
+                                        </div>
+                                        <div class="payment-date">{{ payment.created_on.strftime('%B %d, %Y') }}</div>
+                                        {% if payment.status == 'completed' %}
+                                        <button class="btn btn-secondary download-receipt-btn" data-payment-id="{{ payment.id }}">
+                                            <i class="fas fa-download"></i>
+                                            Receipt
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-credit-card"></i>
+                                    <h4>No payment history</h4>
+                                    <p>Your completed payments will appear here</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Refunds -->
+                    <div class="payments-refunds">
+                        <h4>Refunds</h4>
+                        <div class="payments-list">
+                            {% set refunded_payments = payments | selectattr('status', 'equalto', 'refunded') | list %}
+                            {% if refunded_payments %}
+                                {% for payment in refunded_payments %}
+                                <div class="payment-item refunded">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-undo"></i>
+                                    </div>
+                                    <div class="payment-content">
+                                        {% if payment.enrollment %}
+                                        <div class="payment-course">{{ payment.enrollment.course.title }}</div>
+                                        {% endif %}
+                                        <div class="payment-amount">₹{{ payment.amount }}</div>
+                                        <div class="payment-status">
+                                            <span class="status-badge status-refunded">Refunded</span>
+                                        </div>
+                                        <div class="payment-date">{{ payment.created_on.strftime('%B %d, %Y') }}</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-undo"></i>
+                                    <h4>No refunds</h4>
+                                    <p>Your refunded payments will appear here</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Referrals Section -->
+                <section id="referrals-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Referrals</h3>
+                    </div>
+
+                    <div class="referral-card">
+                        <div class="referral-content">
+                            <h4>Get Your Referral Code</h4>
+                            <p>Generate a referral code to start earning rewards</p>
+                            <form action="{{ url_for('student.generate_referral') }}" method="POST">
+                                <button type="submit" class="btn btn-primary">Generate Code</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="reset-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="modal-title-content">
+                        <h2>Reset Password</h2>
+                        <p>Choose a strong password to secure your account</p>
+                    </div>
+                </div>
+                <span class="close-button" aria-label="Close modal">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <form id="reset-password-form-modal" method="POST" action="{{ url_for('auth.reset_password') }}" class="form-container">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="new_password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                New Password
+                            </label>
+                            <div class="input-container">
+                                <input type="password" id="new_password" name="new_password" class="form-input" placeholder="Enter new password" required>
+                                <button type="button" class="input-toggle password-toggle" data-target="new_password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+
+                            <!-- Password Strength Indicator -->
+                            <div id="password-strength" class="strength-container">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strength-fill"></div>
+                                </div>
+                                <div class="strength-info">
+                                    <span class="strength-label" id="strength-text">Password Strength</span>
+                                    <div class="requirements-list" id="strength-requirements">
+                                        <span class="requirement-item" data-requirement="length">
+                                            <i class="fas fa-times"></i> 8+ characters
+                                        </span>
+                                        <span class="requirement-item" data-requirement="lowercase">
+                                            <i class="fas fa-times"></i> Lowercase
+                                        </span>
+                                        <span class="requirement-item" data-requirement="uppercase">
+                                            <i class="fas fa-times"></i> Uppercase
+                                        </span>
+                                        <span class="requirement-item" data-requirement="number">
+                                            <i class="fas fa-times"></i> Number
+                                        </span>
+                                        <span class="requirement-item" data-requirement="special">
+                                            <i class="fas fa-times"></i> Special char
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="confirm_new_password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Confirm Password
+                            </label>
+                            <div class="input-container">
+                                <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-input" placeholder="Confirm new password" required>
+                                <button type="button" class="input-toggle password-toggle" data-target="confirm_new_password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div id="confirm-error" class="field-error"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('reset-password-modal').style.display='none'">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="reset-password-submit-btn">
+                            <i class="fas fa-save"></i>
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/student_dashboard.js') }}"></script>
+</body>
+</html>

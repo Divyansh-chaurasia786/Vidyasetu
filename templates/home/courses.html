@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidyasetu - Courses</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <!-- Courses Hero Section -->
+    <section class="hero" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); min-height: 60vh;">
+        <div class="container">
+            <div class="hero-content" style="text-align: center; max-width: 1000px;">
+                <h1 style="font-size: 3rem; margin-bottom: 1rem;">Our Courses</h1>
+                <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">
+                    Discover a wide range of courses designed to help you master new skills and advance your career.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Course Management Section -->
+    {% if current_user.is_authenticated and current_user.role in ['admin', 'main_admin'] %}
+    <section class="section" style="background: var(--light-bg);">
+        <div class="container">
+            <h2>Course Management</h2>
+            <p>Manage courses: add new courses, edit existing ones, or remove them.</p>
+            <div style="margin-bottom: 2rem;">
+                <button class="btn btn-primary" onclick="showAddCourseModal()">Add New Course</button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Courses Section -->
+    <section id="courses" class="section">
+        <div class="container">
+            <h2>Available Courses</h2>
+            <p style="text-align: center; margin-bottom: 3rem;">Choose from our comprehensive collection of courses</p>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <form action="{{ url_for('main.search') }}" method="GET" class="search-form">
+                    <input type="text" name="query" placeholder="Search courses..." required class="search-input">
+                    <button type="submit" class="btn btn-primary search-btn"><i class="fas fa-search"></i> Search</button>
+                </form>
+            </div>
+
+            <!-- Course Filter Buttons -->
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <button class="btn btn-secondary filter-btn active" data-filter="all">All Courses</button>
+                <button class="btn btn-secondary filter-btn" data-filter="programming">Programming</button>
+                <button class="btn btn-secondary filter-btn" data-filter="basic_computer">Basic Computer</button>
+                <button class="btn btn-secondary filter-btn" data-filter="data_science">Data Science</button>
+                <button class="btn btn-secondary filter-btn" data-filter="cybersecurity">Cybersecurity</button>
+                <button class="btn btn-secondary filter-btn" data-filter="graphic_design">Graphic Design</button>
+                <button class="btn btn-secondary filter-btn" data-filter="digital_marketing">Digital Marketing</button>
+                <button class="btn btn-secondary filter-btn" data-filter="hardware">Hardware</button>
+                <button class="btn btn-secondary filter-btn" data-filter="accounting">Accounting</button>
+            </div>
+
+            <div class="courses-grid">
+                {% for course in courses %}
+                <div class="course-card" data-course-id="{{ course.id }}" data-category="{{ course.category }}">
+                    <div class="course-image">
+                        <img src="{{ url_for('static', filename='images/' + course.image_file) }}" alt="{{ course.title }}">
+                    </div>
+                    <div class="course-content">
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            {% if not current_user.is_authenticated %}
+                                <button type="button" class="btn btn-primary enroll-btn" data-course="{{ course.title }}" style="padding: 8px 16px; font-size: 0.9rem;">Enroll Now</button>
+                            {% else %}
+                                {% if current_user.role == 'student' %}
+                                    {% set enrollment_status = 'none' %}
+                                    {% for enrollment in enrollments %}
+                                        {% if enrollment.course_id == course.id %}
+                                            {% set enrollment_status = enrollment.status %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if enrollment_status == 'active' %}
+                                        <span style="color: #28a745; font-weight: bold;">Enrolled</span>
+                                    {% elif enrollment_status == 'pending' %}
+                                        <span style="color: #ffc107; font-weight: bold;">Pending Approval</span>
+                                    {% else %}
+                                        <span style="font-weight: bold; color: #ff6b6b;">₹{{ course.fee }}</span>
+                                        <form action="{{ url_for('student.student_enroll_course', course_id=course.id) }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">Enroll Now</button>
+                                        </form>
+                                    {% endif %}
+                                {% elif current_user.role in ['admin', 'main_admin'] %}
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-outline edit-course-btn" data-course-id="{{ course.id }}" data-title="{{ course.title }}" data-description="{{ course.description }}" data-fee="{{ course.fee }}" data-category="{{ course.category }}" data-type="{{ course.type }}" data-image="{{ course.image_file }}" style="padding: 8px 12px; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</button>
+                                        <form action="{{ url_for('admin.delete_course', course_id=course.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this course?')">
+                                            <button type="submit" class="btn btn-danger" style="padding: 8px 12px; font-size: 0.8rem;"><i class="fas fa-trash"></i> Delete</button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span style="font-weight: bold; color: #ff6b6b;">₹{{ course.fee }}</span>
+                                    <button type="button" class="btn btn-primary enroll-btn" data-course="{{ course.title }}" style="padding: 8px 16px; font-size: 0.9rem;">Enquire Now</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="section" style="background: var(--light-bg);">
+        <div class="container">
+            <h2>Course Categories</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                <div class="about-card" style="text-align: center;">
+                    <i class="fas fa-code" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                    <h3>Programming</h3>
+                    <p>Master programming languages and software development skills.</p>
+                </div>
+
+                <div class="about-card" style="text-align: center;">
+                    <i class="fas fa-globe" style="font-size: 3rem; color: #4ecdc4; margin-bottom: 1rem;"></i>
+                    <h3>Web Development</h3>
+                    <p>Build modern websites and web applications from scratch.</p>
+                </div>
+
+                <div class="about-card" style="text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                    <h3>Data Science</h3>
+                    <p>Learn data analysis, machine learning, and AI fundamentals.</p>
+                </div>
+
+                <div class="about-card" style="text-align: center;">
+                    <i class="fas fa-business-time" style="font-size: 3rem; color: #4ecdc4; margin-bottom: 1rem;"></i>
+                    <h3>Business</h3>
+                    <p>Develop business skills and entrepreneurial knowledge.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Why Choose Our Courses?</h2>
+            <div class="about-grid">
+                <div class="about-card">
+                    <i class="fas fa-user-graduate"></i>
+                    <h3>Expert Instructors</h3>
+                    <p>Learn from industry professionals with years of experience.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-certificate"></i>
+                    <h3>Certified Learning</h3>
+                    <p>Earn recognized certificates upon course completion.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Flexible Schedule</h3>
+                    <p>Study at your own pace with lifetime access to materials.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-headset"></i>
+                    <h3>24/7 Support</h3>
+                    <p>Get help whenever you need it from our support team.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-project-diagram"></i>
+                    <h3>Hands-on Projects</h3>
+                    <p>Apply your learning with real-world projects and assignments.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Community Learning</h3>
+                    <p>Join a community of learners and collaborate on projects.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    {% include 'enroll_modal.html' %}
+
+    {% include 'course_modal.html' %}
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    <script>
+        // Course management functions
+        function showAddCourseModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Course';
+            document.getElementById('courseId').value = '';
+            document.getElementById('courseTitle').value = '';
+            document.getElementById('courseDescription').value = '';
+            document.getElementById('courseFee').value = '';
+            document.getElementById('courseCategory').value = '';
+            document.getElementById('courseImage').value = '';
+            document.getElementById('currentImageContainer').style.display = 'none';
+            document.getElementById('courseModal').style.display = 'block';
+        }
+
+        function closeCourseModal() {
+            document.getElementById('courseModal').style.display = 'none';
+        }
+
+        // Handle edit course button clicks
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal functionality for enquiry
+            const enquiryModal = document.getElementById('enquiryModal');
+            const enquiryCloseBtn = document.querySelector('.close');
+            const enquiryForm = document.getElementById('enquiryForm');
+            const enrollBtns = document.querySelectorAll('.enroll-btn');
+
+            // Course modal functionality
+            const courseModal = document.getElementById('courseModal');
+            const courseCloseBtn = courseModal.querySelector('.close');
+            const courseForm = document.getElementById('courseForm');
+            const editCourseBtns = document.querySelectorAll('.edit-course-btn');
+
+            // Open enquiry modal when enroll button is clicked
+            enrollBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const courseName = this.getAttribute('data-course');
+                    document.getElementById('modal_course').value = courseName;
+                    enquiryModal.style.display = 'block';
+                });
+            });
+
+            // Open course modal when edit button is clicked
+            editCourseBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalTitle').textContent = 'Edit Course';
+                    document.getElementById('courseId').value = this.getAttribute('data-course-id');
+                    document.getElementById('courseTitle').value = this.getAttribute('data-title');
+                    document.getElementById('courseDescription').value = this.getAttribute('data-description');
+                    document.getElementById('courseFee').value = this.getAttribute('data-fee');
+                    document.getElementById('courseCategory').value = this.getAttribute('data-category');
+                    document.getElementById('courseType').value = this.getAttribute('data-type');
+
+                    // Handle image display
+                    const imageFile = this.getAttribute('data-image');
+                    const currentImageContainer = document.getElementById('currentImageContainer');
+                    const currentImage = document.getElementById('currentImage');
+                    if (imageFile && imageFile !== 'default.jpg') {
+                        currentImage.src = '/static/images/' + imageFile;
+                        currentImageContainer.style.display = 'block';
+                    } else {
+                        currentImageContainer.style.display = 'none';
+                    }
+
+                    courseModal.style.display = 'block';
+                });
+            });
+
+            // Close enquiry modal
+            enquiryCloseBtn.addEventListener('click', function() {
+                enquiryModal.style.display = 'none';
+            });
+
+            // Close course modal
+            courseCloseBtn.addEventListener('click', function() {
+                courseModal.style.display = 'none';
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === enquiryModal) {
+                    enquiryModal.style.display = 'none';
+                }
+                if (event.target === courseModal) {
+                    courseModal.style.display = 'none';
+                }
+            });
+
+            // Handle enquiry form submission
+            enquiryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+
+                // Disable button and show loading
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+
+                fetch('{{ url_for("main.enquiry") }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Thank you! Your enquiry has been submitted successfully. We will get back to you soon.', 'success');
+                        enquiryForm.reset();
+                        enquiryModal.style.display = 'none';
+                    } else {
+                        showMessage(data.message || 'Error submitting enquiry. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('Error submitting enquiry. Please try again.', 'error');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+            });
+
+            // Handle course form submission
+            courseForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                const isEdit = document.getElementById('courseId').value !== '';
+
+                // Disable button and show loading
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const url = isEdit ? '{{ url_for("admin.admin_edit_course") }}' : '{{ url_for("admin.admin_add_course") }}';
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(`Course ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
+                        courseForm.reset();
+                        courseModal.style.display = 'none';
+
+                        if (isEdit) {
+                            // Update the existing course card
+                            const courseCard = document.querySelector(`.course-card[data-course-id="${data.course.id}"]`);
+                            if (courseCard) {
+                                courseCard.querySelector('img').src = '/static/images/' + data.course.image_file + '?t=' + new Date().getTime();
+                                courseCard.querySelector('img').alt = data.course.title;
+                                courseCard.querySelector('h3').textContent = data.course.title;
+                                courseCard.querySelector('p').textContent = data.course.description;
+                                // Update the fee span for admin view
+                                const feeSpan = courseCard.querySelector('.course-content > div > span');
+                                if (feeSpan) {
+                                    feeSpan.textContent = '₹' + data.course.fee;
+                                }
+                                // Update edit button data attributes
+                                const editBtn = courseCard.querySelector('.edit-course-btn');
+                                if (editBtn) {
+                                    editBtn.setAttribute('data-title', data.course.title);
+                                    editBtn.setAttribute('data-description', data.course.description);
+                                    editBtn.setAttribute('data-fee', data.course.fee);
+                                    editBtn.setAttribute('data-category', data.course.category);
+                                    editBtn.setAttribute('data-image', data.course.image_file);
+                                }
+                            }
+                        } else {
+                            // Add new course card
+                            const coursesGrid = document.querySelector('.courses-grid');
+                            const newCard = document.createElement('div');
+                            newCard.className = 'course-card';
+                            newCard.setAttribute('data-course-id', data.course.id);
+                            newCard.innerHTML = `
+                                <div class="course-image">
+                                    <img src="/static/images/${data.course.image_file}" alt="${data.course.title}">
+                                </div>
+                                <div class="course-content">
+                                    <h3>${data.course.title}</h3>
+                                    <p>${data.course.description}</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn btn-outline edit-course-btn" data-course-id="${data.course.id}" data-title="${data.course.title}" data-description="${data.course.description}" data-fee="${data.course.fee}" data-category="${data.course.category}" data-type="${data.course.type}" data-image="${data.course.image_file}" style="padding: 8px 12px; font-size: 0.8rem;"><i class="fas fa-edit"></i> Edit</button>
+                                            <form action="/admin/courses/delete/${data.course.id}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this course?')">
+                                                <button type="submit" class="btn btn-danger" style="padding: 8px 12px; font-size: 0.8rem;"><i class="fas fa-trash"></i> Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            coursesGrid.appendChild(newCard);
+                        }
+                    } else {
+                        showMessage(data.message || `Error ${isEdit ? 'updating' : 'adding'} course. Please try again.`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage(`Error ${isEdit ? 'updating' : 'adding'} course. Please try again.`, 'error');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+            });
+
+            // Message display function
+            function showMessage(message, type) {
+                // Remove existing message
+                const existingMessage = document.querySelector('.message-alert');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+
+                // Create message element
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message-alert ${type}`;
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    max-width: 400px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    animation: slideInRight 0.3s ease;
+                `;
+
+                if (type === 'success') {
+                    messageDiv.style.backgroundColor = '#28a745';
+                } else {
+                    messageDiv.style.backgroundColor = '#dc3545';
+                }
+
+                messageDiv.innerHTML = `
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="margin-right: 10px;"></i>
+                    ${message}
+                `;
+
+                document.body.appendChild(messageDiv);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    messageDiv.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.parentNode.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+
+            // Course filtering functionality
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const courseCards = document.querySelectorAll('.course-card');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    const filterValue = button.getAttribute('data-filter');
+
+                    courseCards.forEach(card => {
+                        const category = card.getAttribute('data-category');
+                        if (filterValue === 'all' || category === filterValue) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

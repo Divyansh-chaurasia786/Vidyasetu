@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidyasetu - Gallery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <!-- Gallery Hero Section -->
+    <section class="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 60vh;">
+        <div class="container">
+            <div class="hero-content" style="text-align: center; max-width: 1000px;">
+                <h1 style="font-size: 3rem; margin-bottom: 1rem;">Our Gallery</h1>
+                <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">
+                    Explore our learning environment, events, and student success stories.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section">
+        <div class="container">
+            <h2>Photo Gallery</h2>
+            <p style="text-align: center; margin-bottom: 3rem;">A glimpse into our vibrant learning community</p>
+
+            <div class="gallery-grid">
+                <img src="{{ url_for('static', filename='images/gallery1.jpg') }}" alt="Learning Session" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/gallery2.jpg') }}" alt="Student Workshop" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/gallery3.png') }}" alt="Group Study" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/gallery4.jpg') }}" alt="Certification Ceremony" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/gallery5.jfif') }}" alt="Online Learning" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/gallery6.jfif') }}" alt="Student Achievement" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/hero1.jpg') }}" alt="Campus Life" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/hero2.jpg') }}" alt="Interactive Session" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='images/hero3.jpg') }}" alt="Technology Lab" onclick="openModal(this)">
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal for Image Viewing -->
+    <div id="imageModal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
+    <!-- Events Section -->
+    <section class="section" style="background: var(--light-bg);">
+        <div class="container">
+            <h2>Recent Events</h2>
+            <div class="events-grid">
+                <div class="about-card">
+                    <h3>Annual Tech Conference 2024</h3>
+                    <p>Our flagship event featuring industry leaders and cutting-edge technology discussions.</p>
+                    <small style="color: #666;">December 15, 2024</small>
+                </div>
+
+                <div class="about-card">
+                    <h3>Student Achievement Awards</h3>
+                    <p>Celebrating the outstanding achievements of our top-performing students.</p>
+                    <small style="color: #666;">November 28, 2024</small>
+                </div>
+
+                <div class="about-card">
+                    <h3>Web Development Workshop</h3>
+                    <p>Hands-on workshop teaching modern web development techniques and best practices.</p>
+                    <small style="color: #666;">October 20, 2024</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Student Testimonials</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left"></i>
+                    <p>"Vidyasetu transformed my career. The courses are comprehensive and the instructors are amazing!"</p>
+                    <h4>- Priya Sharma</h4>
+                    <small>Software Developer</small>
+                </div>
+
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left"></i>
+                    <p>"The flexible learning schedule allowed me to balance work and education perfectly."</p>
+                    <h4>- Rahul Kumar</h4>
+                    <small>Data Analyst</small>
+                </div>
+
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left"></i>
+                    <p>"The community support and networking opportunities are incredible."</p>
+                    <h4>- Anjali Patel</h4>
+                    <small>Web Designer</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+    <script>
+        // Modal functionality
+        function openModal(img) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = 'block';
+            modalImg.src = img.src;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

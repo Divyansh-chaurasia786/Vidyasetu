@@ -1,0 +1,535 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    {% if user_role == 'admin' %}
+    <!-- Admin Dashboard -->
+    <section class="section admin-dashboard">
+        <div class="container">
+            <div class="text-center mb-3">
+                <h1>Welcome back, {{ current_user.username }}!</h1>
+                <p class="text-muted">Manage your coaching center efficiently</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.total_users }}</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.total_courses }}</h3>
+                        <p>Total Courses</p>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.total_enrollments }}</h3>
+                        <p>Active Enrollments</p>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>₹{{ "%.2f"|format(stats.total_revenue) }}</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="action-card glass-card">
+                        <i class="fas fa-cogs"></i>
+                        <h4>Admin Panel</h4>
+                        <p>Manage users, courses, and enrollments</p>
+                    </a>
+                    <a href="#add-course" class="action-card glass-card" onclick="showAddCourseModal()">
+                        <i class="fas fa-plus-circle"></i>
+                        <h4>Add Course</h4>
+                        <p>Create new courses for students</p>
+                    </a>
+                    <a href="#enquiries" class="action-card glass-card">
+                        <i class="fas fa-envelope"></i>
+                        <h4>View Enquiries</h4>
+                        <p>Check recent student enquiries</p>
+                    </a>
+                    <a href="#reports" class="action-card glass-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4>Reports</h4>
+                        <p>Generate detailed reports</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Enquiries -->
+            <div class="recent-enquiries">
+                <h2>Recent Enquiries</h2>
+                <div class="enquiries-list">
+                    {% if enquiries %}
+                        {% for enquiry in enquiries %}
+                            <div class="enquiry-item glass-card">
+                                <div class="enquiry-header">
+                                    <h4>{{ enquiry.name }}</h4>
+                                    <span class="enquiry-status pending">Pending</span>
+                                </div>
+                                <p><strong>Course:</strong> {{ enquiry.course }}</p>
+                                <p><strong>Email:</strong> {{ enquiry.email }}</p>
+                                <p><strong>Phone:</strong> {{ enquiry.phone }}</p>
+                                <div class="enquiry-message">
+                                    <p>{{ enquiry.message }}</p>
+                                </div>
+                                <small>{{ enquiry.created_on.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="enquiry-item glass-card" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-envelope" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                            <h4>No enquiries yet</h4>
+                            <p>Student enquiries will appear here</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-primary">View All Enquiries</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% elif user_role == 'student' %}
+    <!-- Student Dashboard -->
+    <section class="section student-dashboard">
+        <div class="container">
+            <div class="text-center mb-3">
+                <h1>Welcome back, {{ current_user.username }}!</h1>
+                <p class="text-muted">Track your learning progress and manage your courses</p>
+            </div>
+
+            <!-- Student Stats -->
+            <div class="stats-grid">
+                <a href="{{ url_for('student.student_dashboard') }}#courses-section" class="stat-card glass-card" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="stat-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ enrollments|length }}</h3>
+                        <p>Enrolled Courses</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('student.student_dashboard') }}#certificates-section" class="stat-card glass-card" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="stat-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ certificates|length }}</h3>
+                        <p>Certificates Earned</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('student.student_dashboard') }}#payments-section" class="stat-card glass-card" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>₹{{ "%.2f"|format(payments | selectattr('status', 'equalto', 'completed') | sum(attribute='amount')) }}</h3>
+                        <p>Total Paid</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Total Payments: ₹{{ "%.2f"|format(payments|sum(attribute='amount')) }}</p>
+                        {% set refunded_amount = payments | selectattr('status', 'equalto', 'refunded') | sum(attribute='amount') %}
+                        {% if refunded_amount > 0 %}
+                            <p style="color: #dc3545; font-size: 0.9rem; text-align: center;">Refunded: ₹{{ "%.2f"|format(refunded_amount) }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+
+                <a href="{{ url_for('student.student_dashboard') }}#referrals-section" class="stat-card glass-card" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="stat-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ referral.uses if referral else 0 }}</h3>
+                        <p>Referral Uses</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Enrolled Courses -->
+            <div class="enrolled-courses">
+                <h2>My Courses</h2>
+                {% if enrollments %}
+                    <div class="courses-grid">
+                        {% for enrollment in enrollments %}
+                            <div class="course-card enrolled-course">
+                                <img src="{{ url_for('static', filename='images/' + enrollment.course.image_file) }}" alt="{{ enrollment.course.title }}">
+                                <div class="course-overlay">
+                                    <h3>{{ enrollment.course.title }}</h3>
+                                    <p>{{ enrollment.course.description }}</p>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="progress-text">50% Complete</div>
+                                    <div class="course-actions">
+                                        <span class="status-badge {{ enrollment.status }}">{{ enrollment.status }}</span>
+                                        <a href="#" class="btn btn-sm btn-primary">Continue Learning</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-courses glass-card">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>No Courses Yet</h3>
+                        <p>You haven't enrolled in any courses yet. Browse our courses and start learning!</p>
+                        <a href="{{ url_for('main.courses') }}" class="btn btn-primary">Browse Courses</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Certificates -->
+            <div class="certificates-section">
+                <h2>My Certificates</h2>
+                <div class="certificates-grid">
+                    {% if certificates %}
+                        {% for cert in certificates %}
+                            <div class="certificate-card glass-card">
+                                <i class="fas fa-certificate"></i>
+                                <h4>{{ cert.course_title }}</h4>
+                                <p>Issued on: {{ cert.date.strftime('%B %d, %Y') }}</p>
+                                <a href="{{ url_for('student.student_download_certificate', cert_id=cert.id) }}" class="btn btn-sm btn-secondary">Download</a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="certificate-card glass-card" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-certificate" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                            <h4>No certificates yet</h4>
+                            <p>Complete courses to earn certificates</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Referral Code -->
+            <div class="referral-section">
+                <h2>Earn Rewards with Referrals</h2>
+                <div class="referral-card glass-card">
+                    {% if referral %}
+                        <div class="referral-code">
+                            <h4>Your Referral Code</h4>
+                            <div class="code-display">{{ referral.code }}</div>
+                            <p>Share this code with your friends and get a discount on your next course!</p>
+                            <button class="btn btn-secondary" onclick="copyReferralCode('{{ referral.code }}')">Copy Code</button>
+                        </div>
+                    {% else %}
+                        <div class="no-referral">
+                            <h4>Generate Referral Code</h4>
+                            <p>Start earning rewards by referring friends to our courses!</p>
+                            <form method="POST" action="{{ url_for('student.generate_referral') }}">
+                                <button type="submit" class="btn btn-primary">Generate Code</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="{{ url_for('main.courses') }}" class="action-card glass-card">
+                        <i class="fas fa-search"></i>
+                        <h4>Browse Courses</h4>
+                        <p>Explore available courses</p>
+                    </a>
+                    <a href="{{ url_for('student.student_dashboard') }}" class="action-card glass-card">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <h4>Full Dashboard</h4>
+                        <p>View detailed progress</p>
+                    </a>
+                    <a href="{{ url_for('main.contact') }}" class="action-card glass-card">
+                        <i class="fas fa-envelope"></i>
+                        <h4>Contact Support</h4>
+                        <p>Get help from our team</p>
+                    </a>
+                    <a href="{{ url_for('game.game') }}" class="action-card glass-card">
+                        <i class="fas fa-gamepad"></i>
+                        <h4>Play Game</h4>
+                        <p>Test your knowledge</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% else %}
+    <!-- Hero Section for Guest Users -->
+    <section class="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 60vh;">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="typing-text" style="color: white;">Master Technology Through Hands-On Learning</h1>
+                <p style="color: rgba(255,255,255,0.9);">Join Vidyasetu, India's premier offline computer coaching center where expert instructors guide you through practical, real-world computer education. Transform your career with personalized attention and cutting-edge curriculum.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="{{ url_for('main.courses') }}" class="btn btn-primary btn-large">
+                        <i class="fas fa-graduation-cap"></i> Explore Courses
+                    </a>
+                    <a href="{{ url_for('game.game') }}" class="btn btn-accent btn-large">
+                        <i class="fas fa-gamepad"></i> Play Knowledge Game
+                    </a>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-secondary btn-large">
+                        <i class="fas fa-phone"></i> Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section features">
+        <div class="container">
+            <div class="text-center mb-3">
+                <h2>Why Choose Offline Coaching at Vidyasetu?</h2>
+                <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+                    Experience the difference of personalized, hands-on computer education in a supportive learning environment.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>Expert Instructors</h3>
+                    <p>Get personalized guidance from certified instructors with years of industry experience. Our small batch sizes ensure individual attention.</p>
+                </div>
+
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h3>Hands-On Labs</h3>
+                    <p>Practice on real computers with the latest software and hardware. Our modern lab facilities provide the perfect environment for practical learning.</p>
+                </div>
+
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community Support</h3>
+                    <p>Join a vibrant community of learners. Collaborate on projects, share knowledge, and build lasting professional connections.</p>
+                </div>
+
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h3>Industry Recognition</h3>
+                    <p>Earn certificates that are recognized by employers. Our curriculum is designed in collaboration with industry partners.</p>
+                </div>
+
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Flexible Timings</h3>
+                    <p>Choose from multiple batch timings that fit your schedule. Weekend and weekday options available for working professionals.</p>
+                </div>
+
+                <div class="feature-card glass-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Career Guidance</h3>
+                    <p>Get expert career counseling, resume building assistance, and interview preparation to launch your tech career successfully.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Courses Section -->
+    <section class="section featured-courses-section">
+        <div class="container">
+            <div class="text-center mb-3">
+                <h2>Featured Courses</h2>
+                <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+                    Discover our most popular courses designed to accelerate your career in technology.
+                </p>
+            </div>
+
+            <div class="featured-carousel">
+                <button class="carousel-btn prev-btn" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="carousel-container">
+                    <div class="carousel-track" id="carouselTrack">
+                        {% if courses %}
+                            {% set courses_list = courses[:6] %}
+                            {% for slide_index in range(courses_list|length) %}
+                                <div class="carousel-slide">
+                                    {% set course = courses_list[slide_index] %}
+                                    <div class="featured-card fade-in">
+                                        <div class="featured-image">
+                                            <img src="{{ url_for('static', filename='images/' + course.image_file) }}" alt="{{ course.title }}">
+                                            <div class="featured-badge">Featured</div>
+                                        </div>
+                                        <div class="featured-content">
+                                            <h3>{{ course.title }}</h3>
+                                            <p class="description-text" data-full-text="{{ course.description or '' }}">{{ (course.description or '')[:120] }}{% if (course.description or '')|length > 120 %}...{% endif %}</p>
+                                            {% if (course.description or '')|length > 120 %}
+                                                <a href="#" class="read-more-link">Read More</a>
+                                            {% endif %}
+                                            <div class="featured-meta">
+                                                <span class="featured-price">₹{{ course.fee }}</span>
+                                                <a href="{{ url_for('main.courses') }}" class="btn btn-primary btn-sm">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="carousel-slide">
+                                <div class="featured-card fade-in" style="text-align: center; padding: 3rem;">
+                                    <i class="fas fa-book" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+                                    <h3>No featured courses available</h3>
+                                    <p>Courses will be added soon</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button class="carousel-btn next-btn" id="nextBtn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="carousel-indicators" id="carouselIndicators">
+                {% if courses %}
+                    {% for i in range(courses[:6]|length) %}
+                        <span class="indicator {% if loop.index == 1 %}active{% endif %}" data-slide="{{ loop.index0 }}"></span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.courses') }}" class="btn btn-primary btn-large">
+                    <i class="fas fa-eye"></i> View All Courses
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials">
+        <div class="container">
+            <div class="text-center mb-3">
+                <h2>What Our Students Say</h2>
+                <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+                    Real experiences from students who transformed their careers at Vidyasetu.
+                </p>
+            </div>
+
+            <div class="testimonials-container">
+                <div class="testimonial-card glass-card fade-in">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "The hands-on approach at Vidyasetu completely changed how I learn. The instructors are patient and the lab facilities are top-notch. I landed my dream job just 2 months after completing the course!"
+                    </p>
+                    <div class="testimonial-author">Priya Sharma</div>
+                    <div class="testimonial-role">Full Stack Developer at TechCorp</div>
+                </div>
+
+                <div class="testimonial-card glass-card fade-in">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "As someone who struggled with online learning, the offline coaching at Vidyasetu was perfect. The personal attention and practical sessions helped me understand concepts that seemed impossible before."
+                    </p>
+                    <div class="testimonial-author">Rahul Verma</div>
+                    <div class="testimonial-role">Data Analyst at DataTech Solutions</div>
+                </div>
+
+                <div class="testimonial-card glass-card fade-in">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "The career guidance and interview preparation sessions were invaluable. Vidyasetu doesn't just teach coding – they prepare you for the real world. Highly recommended!"
+                    </p>
+                    <div class="testimonial-author">Anjali Patel</div>
+                    <div class="testimonial-role">Software Engineer at InnovateLabs</div>
+                </div>
+
+                <div class="testimonial-card glass-card fade-in">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "The data analytics course at Vidyasetu was transformative. I learned Python, SQL, and Tableau in a practical way. Now I'm working as a data analyst at a Fortune 500 company!"
+                    </p>
+                    <div class="testimonial-author">Rajesh Kumar</div>
+                    <div class="testimonial-role">Data Analyst at GlobalTech</div>
+                </div>
+
+                <div class="testimonial-card glass-card fade-in">
+                    <div class="quote-icon">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "As a complete beginner, the web development course at Vidyasetu was perfect. The step-by-step approach and constant support helped me build my first website and land a junior developer role."
+                    </p>
+                    <div class="testimonial-author">Priya Singh</div>
+                    <div class="testimonial-role">Junior Web Developer at WebSolutions</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+        <div class="container">
+            <h2>Ready to Start Your Tech Journey?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">
+                Join thousands of successful students who chose Vidyasetu for their computer education. Limited seats available for upcoming batches.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-large">
+                    <i class="fas fa-user-plus"></i> Join Now
+                </a>
+                <a href="{{ url_for('main.contact') }}" class="btn btn-secondary btn-large">
+                    <i class="fas fa-calendar-alt"></i> Schedule Visit
+                </a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% include 'enroll_modal.html' %}
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+
+{% endblock %}

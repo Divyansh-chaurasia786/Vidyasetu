@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Vidyasetu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card chat-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-comments"></i> AI Chat Assistant</h1>
+                <p>Ask me anything about learning and education!</p>
+            </div>
+
+            <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="loading-spinner" id="loading-spinner"></div>
+        <!-- Messages will be loaded here -->
+      </div>
+
+                <div class="chat-input-container">
+                    <form id="chat-form" class="chat-form">
+                        <div class="input-group">
+                            <input type="text" id="message-input" placeholder="Type your message here..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .chat-card {
+            max-width: 800px;
+            width: 95%;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px 8px 0 0;
+            background: #f8f9fa;
+            margin-bottom: 0;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .bot-message .message-avatar {
+            background: #667eea;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .user-message .message-avatar {
+            background: #28a745;
+            margin-right: 0;
+            margin-left: 15px;
+        }
+
+        .user-message .message-content {
+            background: #007bff;
+            color: white;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message-content p {
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .chat-input-container {
+            border: 1px solid #e1e5e9;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            background: white;
+        }
+
+        .chat-form .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chat-form .btn {
+            padding: 12px 20px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            color: #666;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 500px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .chat-form .input-group {
+                flex-direction: column;
+            }
+
+            .chat-form .btn {
+                align-self: flex-end;
+                width: auto;
+                border-radius: 25px;
+                padding: 12px 24px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const chatForm = document.getElementById('chat-form');
+            const messageInput = document.getElementById('message-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            chatForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                // Add user message
+                addMessage(message, 'user');
+                messageInput.value = '';
+
+                // Show loading spinner
+                loadingSpinner.style.display = 'block';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    const response = await fetch('/chat/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+
+                    // Add bot response
+                    if (data.reply) {
+                        addMessage(data.reply, 'bot');
+                    } else {
+                        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                    }
+                } catch (error) {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            });
+
+            function addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+
+                let messageContentHtml;
+                if (content.trim().startsWith('<form')) {
+                    messageContentHtml = content;
+                } else {
+                    messageContentHtml = `<p>${content}</p>`;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-${sender === 'user' ? 'user' : 'robot'}"></i>
+                    </div>
+                    <div class="message-content">
+                        ${messageContentHtml}
+                    </div>
+                `;
+
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // If the content was a form, add a submit handler
+                if (content.trim().startsWith('<form')) {
+                    const form = messageDiv.querySelector('form');
+                    if (form) {
+                        form.addEventListener('submit', async function(e) {
+                            e.preventDefault();
+                            const formData = new FormData(form);
+                            
+                            // You can process the form data here.
+                            // For example, send it to the server.
+                            
+                            // Remove the form after submission and show a thank you message
+                            form.parentElement.innerHTML = "<p>Thanks for providing the details!</p>";
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

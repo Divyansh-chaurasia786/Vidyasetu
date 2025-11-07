@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidyasetu Games - Ultimate Arcade Experience</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body class="{% if current_user.is_authenticated %}logged-in{% endif %}">
+  <!-- Back Button -->
+  <button id="back-button" class="btn btn-outline back-btn">← Back</button>
+
+  <!-- Music Control Button -->
+  <button id="music-btn" class="btn btn-outline music-btn">🔊 Music</button>
+
+  <!-- Hero Section -->
+<section class="hero">
+    <!-- Animated Overlay -->
+    <div class="hero-overlay"></div>
+    <!-- Floating Particles -->
+    <div class="hero-particles">
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+        <div class="particle particle-5"></div>
+    </div>
+    <!-- Floating Icons -->
+    <div class="floating-icons">
+        <div class="floating-icon icon-1">💻</div>
+        <div class="floating-icon icon-2">🤖</div>
+        <div class="floating-icon icon-3">⌨️</div>
+        <div class="floating-icon icon-4">🔒</div>
+        <div class="floating-icon icon-5">📊</div>
+        <div class="floating-icon icon-6">🌍</div>
+    </div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Vidyasetu Arcade</h1>
+            <p class="hero-subtitle">
+                Level up your skills with our interactive educational games!
+            </p>
+            <a href="#game-machines" class="cta-button">Start Playing</a>
+        </div>
+    </div>
+</section>
+
+  <!-- Game Machines Section -->
+  <section class="game-machines">
+    <div class="container">
+      <h2>Choose Your Game</h2>
+      <div class="machines-grid">
+        <!-- Code Quiz Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">💻</div>
+              <h3>Code Quiz</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Test your coding knowledge!</p>
+            <div class="difficulty-buttons">
+              <button class="level easy">Easy</button>
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+
+
+        <!-- AI/ML Game Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">🤖</div>
+              <h3>AI/ML Game</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Test your AI and ML knowledge!</p>
+            <div class="difficulty-buttons">
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+              <button class="level expert">Expert</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+        <!-- Speed Typing Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">⌨️</div>
+              <h3>Speed Typing</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Test your typing speed!</p>
+            <div class="difficulty-buttons">
+              <button class="level easy">Easy</button>
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+        <!-- Cyber Security Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">🔒</div>
+              <h3>Cyber Security</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Become a cyber hero!</p>
+            <div class="difficulty-buttons">
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+              <button class="level expert">Expert</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+        <!-- Data Science Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">📊</div>
+              <h3>Data Science</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Explore data analysis!</p>
+            <div class="difficulty-buttons">
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+              <button class="level expert">Expert</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+        <!-- Web Dev Challenge Machine -->
+        <div class="machine">
+          <div class="hologram-overlay"></div>
+          <div class="energy-particles">
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+            <div class="energy-particle"></div>
+          </div>
+          <div class="machine-top">
+            <div class="screen">
+              <div class="game-icon">🌍</div>
+              <h3>Web Dev Challenge</h3>
+            </div>
+          </div>
+          <div class="machine-body">
+            <p>Build websites!</p>
+            <div class="difficulty-buttons">
+              <button class="level easy">Easy</button>
+              <button class="level medium">Medium</button>
+              <button class="level hard">Hard</button>
+            </div>
+            <button class="insert-coin">Insert Coin</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Leaderboard Section -->
+  <section class="leaderboard">
+    <div class="container">
+      <h2>🏆 Top Players</h2>
+      <div class="leaderboard-tabs">
+        <button class="tab-btn active" data-game="code-quiz">Code Quiz</button>
+        <button class="tab-btn" data-game="ai-ml">AI/ML</button>
+        <button class="tab-btn" data-game="speed-typing">Speed Typing</button>
+        <button class="tab-btn" data-game="cyber-security">Cyber Security</button>
+        <button class="tab-btn" data-game="data-science">Data Science</button>
+        <button class="tab-btn" data-game="web-dev">Web Dev</button>
+      </div>
+      <div id="leaderboard-content" class="leaderboard-content">
+        <!-- Dynamic content loaded here -->
+      </div>
+      <div id="user-scores" class="user-scores" style="display: none;">
+        <!-- User's best scores will be displayed here -->
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- Game Modals -->
+  <!-- Code Quiz Modal -->
+  <div id="code-quiz-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💻 Code Quiz</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="code-quiz-instructions" class="game-instructions">
+          <p>Test your coding knowledge! Answer as many questions as possible correctly within the time limit.</p>
+          <p>Difficulty: <span id="code-quiz-difficulty">Medium</span> | Question: <span id="code-quiz-counter">1/10</span> | Score: <span id="code-quiz-score">0</span> | Time: <span id="code-quiz-timer">60</span>s</p>
+        </div>
+        <div id="code-quiz-question" class="game-question">
+          <div class="question-screen">
+            <h3 id="code-quiz-question-text">Loading question...</h3>
+          </div>
+          <div id="code-quiz-options" class="options-grid">
+            <!-- Options will be populated by JS -->
+          </div>
+        </div>
+        <div id="code-quiz-result" class="game-result" style="display: none;">
+          <h3>Game Over!</h3>
+          <p>Your Score: <span id="final-code-score">0</span></p>
+          <button id="play-again-code" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Speed Typing Modal -->
+  <div id="speed-typing-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⌨️ Speed Typing</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="speed-typing-instructions" class="game-instructions">
+          <p>Type the text as fast and accurately as possible!</p>
+          <p>Difficulty: <span id="speed-typing-difficulty">Medium</span> | WPM: <span id="typing-wpm">0</span> | Accuracy: <span id="typing-accuracy">100</span>% | Time: <span id="typing-timer">60</span>s</p>
+        </div>
+        <div id="speed-typing-content" class="game-question">
+          <p id="typing-text">Loading text...</p>
+          <textarea id="typing-input" placeholder="Start typing here..." rows="3"></textarea>
+        </div>
+        <div id="speed-typing-result" class="game-result" style="display: none;">
+          <h3>Time's Up!</h3>
+          <p>WPM: <span id="final-wpm">0</span> | Accuracy: <span id="final-accuracy">0</span>%</p>
+          <p>Score: <span id="final-typing-score">0</span></p>
+          <button id="play-again-typing" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cyber Security Modal -->
+  <div id="cyber-security-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔒 Cyber Security</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="cyber-security-instructions" class="game-instructions">
+          <p>Identify security threats and protect the system!</p>
+          <p>Difficulty: <span id="cyber-security-difficulty">Medium</span> | Question: <span id="cyber-security-counter">1/10</span> | Score: <span id="cyber-security-score">0</span> | Time: <span id="cyber-security-timer">60</span>s</p>
+        </div>
+        <div id="cyber-security-question" class="game-question">
+          <div class="question-screen">
+            <h3 id="cyber-security-question-text">Loading scenario...</h3>
+          </div>
+          <div id="cyber-security-options" class="options-grid">
+            <!-- Options will be populated by JS -->
+          </div>
+        </div>
+        <div id="cyber-security-result" class="game-result" style="display: none;">
+          <h3>Game Over!</h3>
+          <p>Your Score: <span id="final-cyber-score">0</span></p>
+          <button id="play-again-cyber" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Science Modal -->
+  <div id="data-science-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📊 Data Science</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="data-science-instructions" class="game-instructions">
+          <p>Analyze data and answer analytical questions!</p>
+          <p>Difficulty: <span id="data-science-difficulty">Medium</span> | Question: <span id="data-science-counter">1/10</span> | Score: <span id="data-science-score">0</span> | Time: <span id="data-science-timer">60</span>s</p>
+        </div>
+        <div id="data-science-question" class="game-question">
+          <div class="question-screen">
+            <h3 id="data-science-question-text">Loading question...</h3>
+          </div>
+          <div id="data-science-options" class="options-grid">
+            <!-- Options will be populated by JS -->
+          </div>
+        </div>
+        <div id="data-science-result" class="game-result" style="display: none;">
+          <h3>Game Over!</h3>
+          <p>Your Score: <span id="final-data-score">0</span></p>
+          <button id="play-again-data" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Web Dev Challenge Modal -->
+  <div id="web-dev-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🌍 Web Dev Challenge</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="web-dev-instructions" class="game-instructions">
+          <p>Complete code snippets and fix bugs!</p>
+          <p>Difficulty: <span id="web-dev-difficulty">Easy</span> | Question: <span id="web-dev-counter">1/10</span> | Score: <span id="web-dev-score">0</span> | Time: <span id="web-dev-timer">60</span>s</p>
+        </div>
+        <div id="web-dev-question" class="game-question">
+          <div class="question-screen">
+            <h3 id="web-dev-question-text">Loading challenge...</h3>
+          </div>
+          <div id="web-dev-options" class="options-grid">
+            <!-- Options will be populated by JS -->
+          </div>
+        </div>
+        <div id="web-dev-result" class="game-result" style="display: none;">
+          <h3>Game Over!</h3>
+          <p>Your Score: <span id="final-web-score">0</span></p>
+          <button id="play-again-web" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI/ML Challenge Modal -->
+  <div id="ai-ml-modal" class="game-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🤖 AI/ML Challenge</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="ai-ml-instructions" class="game-instructions">
+          <p>Test your knowledge of Artificial Intelligence and Machine Learning!</p>
+          <p>Difficulty: <span id="ai-ml-difficulty">Medium</span> | Question: <span id="ai-ml-counter">1/10</span> | Score: <span id="ai-ml-score">0</span> | Time: <span id="ai-ml-timer">60</span>s</p>
+        </div>
+        <div id="ai-ml-question" class="game-question">
+          <div class="question-screen">
+            <h3 id="ai-ml-question-text">Loading question...</h3>
+          </div>
+          <div id="ai-ml-options" class="options-grid">
+            <!-- Options will be populated by JS -->
+          </div>
+        </div>
+        <div id="ai-ml-result" class="game-result" style="display: none;">
+          <h3>Game Over!</h3>
+          <p>Your Score: <span id="final-ai-ml-score">0</span></p>
+          <button id="play-again-ai-ml" class="btn btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Music -->
+  <audio id="bg-music" loop>
+    <source src="{{ url_for('static', filename='music/bg-music.mp3') }}" type="audio/mpeg">
+  </audio>
+
+  <!-- Hidden element to pass user data -->
+  <div id="user-data" style="display:none;">{{ user_data|tojson if user_data else 'null' }}</div>
+
+  <script>
+    // Pass user data to JavaScript
+    window.userData = JSON.parse(document.getElementById('user-data').textContent);
+  </script>
+  <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

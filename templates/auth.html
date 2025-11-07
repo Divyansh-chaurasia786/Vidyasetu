@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Authentication - Vidyasetu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+    <div class="auth-universe">
+        <!-- Floating Knowledge Elements -->
+        <div class="floating-elements">
+            <div class="floating-book book-1"><i class="fas fa-book"></i></div>
+            <div class="floating-book book-2"><i class="fas fa-graduation-cap"></i></div>
+            <div class="floating-book book-3"><i class="fas fa-brain"></i></div>
+            <div class="floating-book book-4"><i class="fas fa-lightbulb"></i></div>
+            <div class="floating-book book-5"><i class="fas fa-atom"></i></div>
+            <div class="floating-book book-6"><i class="fas fa-microscope"></i></div>
+        </div>
+
+        <!-- Main Auth Container -->
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="card-header">
+                    <div class="logo-orbit">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Vidyasetu Logo" class="logo">
+                        <div class="orbit-ring"></div>
+                    </div>
+                    <h1 class="brand-name">Vidyasetu</h1>
+                    <p class="tagline">Unlock Your Knowledge Universe</p>
+                </div>
+
+                <div class="auth-forms">
+                    <!-- Login Form -->
+                    <div id="login-form" class="auth-form active">
+                        <h2>Welcome Back</h2>
+                        <div class="login-method-toggle">
+                            <button class="toggle-login-method active" data-method="password">Password</button>
+                            <button class="toggle-login-method" data-method="otp">OTP</button>
+                        </div>
+                        <form id="login-form-element">
+                            <div class="input-orbit">
+                                <input type="text" name="username_or_email" placeholder="Username or Email" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div id="password-group" class="input-orbit">
+                                <input type="password" name="password" placeholder="Password">
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div id="otp-group" class="input-orbit" style="display: none;">
+                                <div class="input-with-button">
+                                    <input type="text" name="otp" placeholder="OTP">
+                                    <button type="button" id="send-otp-button">Send OTP</button>
+                                </div>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <button type="submit" class="btn-cosmic">Enter the Knowledge Realm</button>
+                        </form>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signup-form" class="auth-form">
+                        <h2>Join the Knowledge Quest</h2>
+                        <form id="signup-form-element">
+                            <div class="input-orbit">
+                                <input type="text" name="full_name" placeholder="Full Name" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div class="input-orbit">
+                                <input type="email" name="email" placeholder="Email" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div class="input-orbit">
+                                <input type="password" id="signup-password" name="password" placeholder="Password" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-indicator">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill" id="signup-strength-fill"></div>
+                                    </div>
+                                    <div class="strength-details">
+                                        <span class="strength-text" id="signup-strength-text">Password strength</span>
+                                        <div class="strength-requirements" id="signup-strength-requirements">
+                                            <span class="requirement" data-requirement="length">
+                                                <i class="fas fa-times"></i> At least 8 characters
+                                            </span>
+                                            <span class="requirement" data-requirement="lowercase">
+                                                <i class="fas fa-times"></i> Lowercase letter
+                                            </span>
+                                            <span class="requirement" data-requirement="uppercase">
+                                                <i class="fas fa-times"></i> Uppercase letter
+                                            </span>
+                                            <span class="requirement" data-requirement="number">
+                                                <i class="fas fa-times"></i> Number
+                                            </span>
+                                            <span class="requirement" data-requirement="special">
+                                                <i class="fas fa-times"></i> Special character
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-orbit">
+                                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <div class="input-orbit">
+                                <input type="text" name="referral_code" placeholder="Referral Code (Optional)">
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <button type="submit" class="btn-cosmic">Begin Your Journey</button>
+                        </form>
+                        <div class="form-footer">
+                            <p class="terms">By joining, you embrace the <a href="#">Code of Knowledge</a></p>
+                        </div>
+                    </div>
+
+                    <!-- OTP Form -->
+                    <div id="otp-form" class="auth-form">
+                        <h2>Verify Your Portal</h2>
+                        <p class="otp-desc">Enter the 6-digit code sent to your email</p>
+                        <form id="otp-form-element">
+                            <div class="input-orbit otp-orbit">
+                                <input type="text" name="otp" placeholder="000000" maxlength="6" required>
+                                <div class="orbit-trail"></div>
+                            </div>
+                            <button type="submit" class="btn-cosmic">Activate Portal</button>
+                        </form>
+                        <div class="form-footer">
+                            <a href="#" id="resend-otp" class="resend-link">Resend verification code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-toggle">
+                    <button class="toggle-btn active" data-form="login">Login</button>
+                    <button class="toggle-btn" data-form="signup">Sign Up</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nebula Background -->
+        <div class="nebula-bg">
+            <div class="nebula-cloud cloud-1"></div>
+            <div class="nebula-cloud cloud-2"></div>
+            <div class="nebula-cloud cloud-3"></div>
+        </div>
+    </div>
+
+    <div id="message-container"></div>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

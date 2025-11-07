@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidyasetu - Premier Offline Computer Coaching</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="loading">
+        <div class="spinner"></div>
+    </div>
+
+    {% include 'navbar.html' %}
+
+    {% block content %}{% endblock %}
+
+    {% include 'footer.html' %}
+
+    <!-- Floating Chat Button -->
+    <button id="floating-chat-btn" class="floating-chat-btn minimized">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-widget-header">
+            <h3><i class="fas fa-comments"></i> AI Chat Assistant</h3>
+            <button id="chat-widget-close" class="chat-widget-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="chat-widget-messages" class="chat-widget-messages">
+            <div class="chat-widget-message bot">
+                <div class="chat-widget-message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="chat-widget-message-content">
+                    <p>Hello! I'm your AI learning assistant. How can I help you today?</p>
+                </div>
+            </div>
+            <!-- Typing Indicator -->
+            <div id="chat-widget-typing" class="chat-widget-typing">
+                <div class="chat-widget-message bot">
+                    <div class="chat-widget-message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="chat-widget-message-content">
+                        <p>AI is typing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-widget-input">
+            <form id="chat-widget-form" class="chat-widget-form">
+                <input type="text" id="chat-widget-input" placeholder="Type your message here..." required>
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Escalation Form (hidden by default) -->
+        <div id="chat-widget-escalation" class="chat-widget-escalation" style="display: none;">
+            <div class="chat-widget-input">
+                <h4>Please share your details, we'll contact you with a solution!</h4>
+                <form id="escalation-form-submit">
+                    <div class="form-group">
+                        <input type="text" id="escalation-name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="escalation-email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="escalation-phone" placeholder="Your Phone" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="escalation-problem" placeholder="Describe your problem..." rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

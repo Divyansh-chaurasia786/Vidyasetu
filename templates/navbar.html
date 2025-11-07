@@ -1,0 +1,148 @@
+<nav class="navbar">
+    <div class="navbar-container">
+        <!-- Left Section: Logo and Brand -->
+        <div class="navbar-left">
+            <a href="{{ url_for('main.home') }}" class="navbar-brand">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Vidyasetu Logo" class="navbar-logo">
+                    <div class="brand-pulse"></div>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">Vidyasetu</span>
+                    <span class="brand-tagline">Premier Computer Coaching</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Center Section: Navigation Links -->
+        <div class="navbar-center">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('main.home') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.about') }}" class="nav-link">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.courses') }}" class="nav-link">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Courses</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.gallery') }}" class="nav-link">
+                        <i class="fas fa-images"></i>
+                        <span>Gallery</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.contact') }}" class="nav-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Contact</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('game.game') }}" class="nav-link">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Games</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Section: Auth and Actions -->
+        <div class="navbar-right">
+            {% if current_user.is_authenticated %}
+                <div class="user-profile">
+                    <button class="profile-btn">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="username">{{ current_user.username }}</span>
+                            <span class="user-role">{{ current_user.role.title() }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="profile-dropdown">
+                        {% if current_user.role == 'student' %}
+                        <a href="{{ url_for('student.student_dashboard') }}" class="dropdown-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        {% elif current_user.role in ['admin', 'main_admin'] %}
+                        <a href="{{ url_for('admin.admin_panel') }}" class="dropdown-item">
+                            <i class="fas fa-cogs"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="auth-dropdown">
+                    <button class="account-btn">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Account</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="auth-dropdown-menu">
+                        <a href="{{ url_for('auth.login') }}" class="auth-dropdown-item">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{{ url_for('auth.signup') }}" class="auth-dropdown-item signup">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Sign Up</span>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay">
+        <div class="mobile-menu">
+            <div class="mobile-menu-header">
+                <div class="mobile-brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Vidyasetu Logo" class="mobile-logo">
+                    <span class="mobile-brand-text">Vidyasetu</span>
+                </div>
+                <button class="mobile-menu-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="mobile-nav-menu">
+                <li><a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{{ url_for('main.about') }}"><i class="fas fa-info-circle"></i> About</a></li>
+                <li><a href="{{ url_for('main.courses') }}"><i class="fas fa-graduation-cap"></i> Courses</a></li>
+                <li><a href="{{ url_for('main.gallery') }}"><i class="fas fa-images"></i> Gallery</a></li>
+                <li><a href="{{ url_for('main.contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{{ url_for('game.game') }}"><i class="fas fa-gamepad"></i> Games</a></li>
+            </ul>
+            {% if not current_user.is_authenticated %}
+            <div class="mobile-auth">
+                <a href="{{ url_for('auth.login') }}" class="mobile-btn-login">Login</a>
+                <a href="{{ url_for('auth.signup') }}" class="mobile-btn-signup">Sign Up</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>

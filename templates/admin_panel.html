@@ -1,0 +1,684 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section">
+      <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <div class="icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="info">
+            <h4>Total Users</h4>
+            <p id="total-users">{{ stats.total_users }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="info">
+            <h4>Total Courses</h4>
+            <p id="total-courses">{{ stats.total_courses }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="info">
+            <h4>Total Enrollments</h4>
+            <p id="total-enrollments">{{ stats.total_enrollments }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">
+            <i class="fas fa-rupee-sign"></i>
+          </div>
+          <div class="info">
+            <h4>Total Revenue</h4>
+            <p id="total-revenue">₹{{ stats.total_revenue }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div id="users" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-users"></i> Users</h2>
+        <div class="search-container">
+          <input type="text" id="search-users" placeholder="Search users by username, email, full name..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="users"></i>
+        </div>
+      </div>
+      <div class="modal-nav">
+        <button onclick="showSubSection('users', 'all')" class="modal-nav-btn active">All Users</button>
+        <button onclick="showSubSection('users', 'pending')" class="modal-nav-btn">Pending Users</button>
+        {% if current_user.role == 'main_admin' %}
+        <button onclick="showSubSection('users', 'admins')" class="modal-nav-btn">Admins</button>
+        {% endif %}
+      </div>
+
+      <!-- All Users Sub-Section -->
+      <div id="users-all" class="sub-section">
+        {% if current_user.role == 'main_admin' %}
+        <div class="add-user-form">
+          <h3><i class="fas fa-user-plus"></i> Add New Student</h3>
+          <form id="add-user-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="add-full_name"><i class="fas fa-id-card"></i> Full Name</label>
+                <input type="text" name="full_name" id="add-full_name" placeholder="Enter full name" required>
+              </div>
+              <div class="form-group">
+                <label for="add-email"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" name="email" id="add-email" placeholder="Enter email address" required>
+              </div>
+              <div class="form-group">
+                <label for="add-password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" name="password" id="add-password" placeholder="Enter password" required>
+              </div>
+              <div class="form-group">
+                <label for="add-mobile_number"><i class="fas fa-phone"></i> Mobile Number</label>
+                <input type="text" name="mobile_number" id="add-mobile_number" placeholder="Enter mobile number">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn add-user-btn"><i class="fas fa-plus"></i> Add Student</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Mobile Number</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            {% for user in users %}
+            <tr data-user-id="{{ user.id }}">
+              <td>{{ user.id }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.mobile_number or 'N/A' }}</td>
+              <td>{{ user.role }}</td>
+              <td>{{ user.status }}</td>
+              <td>
+                <div class="action-buttons">
+                  <div class="btn-icon">
+                    <a href="#" class="view-user-btn" data-user-id="{{ user.id }}" data-tooltip="View"><i class="fas fa-eye"></i></a>
+                  </div>
+                  {% if user.id != current_user.id and ((current_user.role == 'main_admin') or (current_user.role == 'admin' and user.role == 'student')) %}
+                  <div class="btn-icon">
+                    <a href="#" class="edit-user-btn" data-user-id="{{ user.id }}" data-tooltip="Edit"><i class="fas fa-edit"></i></a>
+                  </div>
+                  <div class="btn-icon">
+                    <a href="#" class="delete-user-btn" data-user-id="{{ user.id }}" data-tooltip="Delete"><i class="fas fa-trash"></i></a>
+                  </div>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pending Users Sub-Section -->
+      <div id="users-pending" class="sub-section" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pending-users-table-body">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Admins Sub-Section -->
+      {% if current_user.role == 'main_admin' %}
+      <div id="users-admins" class="sub-section" style="display: none;">
+        <!-- Create Admin Form -->
+        <div class="create-admin-form">
+          <h3><i class="fas fa-user-shield"></i> Create New Admin</h3>
+          <form id="create-admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="admin-full_name"><i class="fas fa-id-card"></i> Full Name</label>
+                <input type="text" name="full_name" id="admin-full_name" placeholder="Enter full name" required>
+              </div>
+              <div class="form-group">
+                <label for="admin-email"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" name="email" id="admin-email" placeholder="Enter email address" required>
+              </div>
+              <div class="form-group">
+                <label for="admin-password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" name="password" id="admin-password" placeholder="Enter password" required>
+              </div>
+              <div class="form-group full-width">
+                <label for="admin-course-access"><i class="fas fa-book"></i> Course Access</label>
+                <select name="course_access" id="admin-course-access" multiple size="5" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; background-color: #fff; font-size: 14px;">
+                </select>
+                <small style="color: #64748b; font-size: 0.85rem;">Hold Ctrl (Cmd on Mac) to select multiple courses</small>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn create-admin-btn"><i class="fas fa-plus"></i> Create Admin</button>
+            </div>
+          </form>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admins-table-body">
+            {% for user in users %}
+              {% if user.role == 'admin' or user.role == 'main_admin' %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  {% if user.id != current_user.id %}
+                  <div class="action-buttons">
+                    <div class="btn-icon">
+                      <a href="#" class="edit-user-btn" data-user-id="{{ user.id }}" data-user-username="{{ user.username }}" data-user-email="{{ user.email }}" data-user-mobile_number="{{ user.mobile_number or '' }}" data-user-role="{{ user.role }}" data-user-status="{{ user.status }}" data-user-full_name="{{ user.full_name or '' }}" data-user-discount="{{ user.discount or '' }}" data-tooltip="Edit"><i class="fas fa-edit"></i></a>
+                    </div>
+                    <div class="btn-icon">
+                      <a href="#" class="delete-user-btn" data-user-id="{{ user.id }}" data-user-username="{{ user.username }}" data-tooltip="Delete"><i class="fas fa-trash"></i></a>
+                    </div>
+                  </div>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Courses Section -->
+    <div id="courses" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-book"></i> Courses</h2>
+        <div class="search-container">
+          <input type="text" id="search-courses" placeholder="Search courses by title, category, description..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="courses"></i>
+        </div>
+      </div>
+      <div class="add-course-form">
+        <h3><i class="fas fa-plus-circle"></i> Add New Course</h3>
+        <form id="add-course-form" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="course-title"><i class="fas fa-book"></i> Course Title</label>
+              <input type="text" name="title" id="course-title" placeholder="Enter course title" required>
+            </div>
+            <div class="form-group">
+              <label for="course-fee"><i class="fas fa-rupee-sign"></i> Fee (₹)</label>
+              <input type="number" name="fee" id="course-fee" placeholder="Enter course fee" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="course-category"><i class="fas fa-tags"></i> Category</label>
+              <select name="category" id="course-category" required>
+                <option value="">Select Category</option>
+                <option value="Basic Computing">Basic Computing</option>
+                <option value="Programming">Programming</option>
+                <option value="Data Science & AI">Data Science & AI</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Design & Animation">Design & Animation</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Accounting">Accounting</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="course-type"><i class="fas fa-layer-group"></i> Difficulty Level</label>
+              <select name="type" id="course-type" required>
+                <option value="">Select Level</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label for="course-description"><i class="fas fa-align-left"></i> Course Description</label>
+              <textarea name="description" id="course-description" placeholder="Enter detailed course description" rows="4" required></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label for="course-image"><i class="fas fa-image"></i> Course Image</label>
+              <input type="file" name="image_file" id="course-image" accept="image/png, image/jpeg, image/jpg">
+              <small style="color: #64748b; font-size: 0.85rem;">Supported formats: PNG, JPG, JPEG. Recommended size: 400x300px</small>
+            </div>
+            <div class="form-group full-width">
+              <input type="checkbox" name="auto_generate_image" id="auto-generate-image" value="true">
+              <label for="auto-generate-image">Auto-generate image using AI</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn add-course-btn"><i class="fas fa-plus"></i> Add Course</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Category Filters Dropdown -->
+      <div class="category-filters-dropdown">
+        <label for="category-filter"><i class="fas fa-filter"></i> Filter by Category:</label>
+        <select id="category-filter">
+          <option value="all">All Categories</option>
+          <option value="basic-computing">Basic Computing</option>
+          <option value="programming">Programming</option>
+          <option value="data-science-ai">Data Science & AI</option>
+          <option value="cybersecurity">Cybersecurity</option>
+          <option value="design-animation">Design & Animation</option>
+          <option value="digital-marketing">Digital Marketing</option>
+          <option value="hardware">Hardware</option>
+          <option value="accounting">Accounting</option>
+        </select>
+      </div>
+
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Fee</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+          <tbody id="courses-table-body">
+            {% for course in courses %}
+            <tr data-course-id="{{ course.id }}">
+              <td>{{ course.id }}</td>
+              <td><img src="{{ url_for('static', filename='images/' + course.image_file) }}" alt="{{ course.title }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+              <td>{{ course.title }}</td>
+              <td>{{ course.category }}</td>
+              <td>₹{{ course.fee }}</td>
+              <td>
+                <div class="action-buttons">
+                  <div class="btn-icon">
+                    <a href="#" class="view-course-btn" data-course-id="{{ course.id }}" data-tooltip="View"><i class="fas fa-eye"></i></a>
+                  </div>
+                  <div class="btn-icon">
+                    <a href="#" class="edit-course-btn" data-course-id="{{ course.id }}" data-course-title="{{ course.title }}" data-course-description="{{ course.description }}" data-course-fee="{{ course.fee }}" data-course-category="{{ course.category }}" data-course-type="{{ course.type }}" data-course-image="{{ course.image_file }}" data-tooltip="Edit"><i class="fas fa-edit"></i></a>
+                  </div>
+                  <div class="btn-icon">
+                    <a href="#" class="delete-course-btn" data-course-id="{{ course.id }}" data-course-title="{{ course.title }}" data-tooltip="Delete"><i class="fas fa-trash"></i></a>
+                  </div>
+                  <div class="btn-icon">
+                    <a href="#" class="generate-image-btn" data-course-id="{{ course.id }}" data-course-title="{{ course.title }}" data-tooltip="Generate AI Image"><i class="fas fa-image"></i></a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+    </div>
+
+    <!-- Enrollments Section -->
+    <div id="enrollments" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-graduation-cap"></i> Enrollments</h2>
+        <div class="search-container">
+          <input type="text" id="search-enrollments" placeholder="Search enrollments by user, course..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="enrollments"></i>
+        </div>
+      </div>
+      <div class="filters">
+        <select id="status-filter">
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="">All Statuses</option>
+        </select>
+        <select id="course-filter">
+        </select>
+        <select id="user-filter">
+        </select>
+        <button id="apply-filters">Apply Filters</button>
+        <button id="clear-filters">Clear Filters</button>
+      </div>
+
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Course</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Dues</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+          <tbody id="enrollments-table-body">
+          </tbody>
+      </table>
+    </div>
+
+    <!-- Payments Section -->
+    <div id="payments" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-credit-card"></i> Payments</h2>
+        <div class="search-container">
+          <input type="text" id="search-payments" placeholder="Search payments by user, course..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="payments"></i>
+        </div>
+      </div>
+      <!-- Add Offline Payment Form -->
+      <div class="add-offline-payment-form">
+        <h3><i class="fas fa-credit-card"></i> Add Offline Payment</h3>
+        <form id="add-offline-payment-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="payment-user-identifier"><i class="fas fa-user"></i> User ID or Username</label>
+              <input type="text" name="user_identifier" id="payment-user-identifier" placeholder="Enter user ID or username" required>
+            </div>
+            <div class="form-group">
+              <label for="payment-course-id"><i class="fas fa-book"></i> Course ID</label>
+              <input type="number" name="course_id" id="payment-course-id" placeholder="Enter course ID" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="payment-amount"><i class="fas fa-rupee-sign"></i> Amount (₹)</label>
+              <input type="number" step="0.01" name="amount" id="payment-amount" placeholder="Enter payment amount" min="0" required>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn add-payment-btn"><i class="fas fa-plus"></i> Add Payment</button>
+          </div>
+        </form>
+      </div>
+
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+          <tbody id="payments-table-body">
+          </tbody>
+      </table>
+    </div>
+
+    <!-- Certificates Section -->
+    <div id="certificates" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-certificate"></i> Certificates</h2>
+        <div class="search-container">
+          <input type="text" id="search-certificates" placeholder="Search certificates by user, course..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="certificates"></i>
+        </div>
+      </div>
+
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Course</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+          <tbody id="certificates-table-body">
+          </tbody>
+      </table>
+    </div>
+
+    <!-- Enquiries Section -->
+    <div id="enquiries" class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-envelope"></i> Enquiries</h2>
+        <div class="search-container">
+          <input type="text" id="search-enquiries" placeholder="Search enquiries by name, email, course..." style="width: 250px;">
+          <i class="fas fa-search search-icon" data-section="enquiries"></i>
+        </div>
+      </div>
+
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Course</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+          <tbody id="enquiries-table-body">
+          </tbody>
+      </table>
+    </div>
+
+    <!-- View User Modal -->
+    <div id="view-user-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3><i class="fas fa-user"></i> User Details</h3>
+        <div class="user-details">
+          <p><strong>ID:</strong> <span id="view-user-id"></span></p>
+          <p><strong>Username:</strong> <span id="view-user-username"></span></p>
+          <p><strong>Email:</strong> <span id="view-user-email"></span></p>
+          <p><strong>Full Name:</strong> <span id="view-user-full_name"></span></p>
+          <p><strong>Mobile Number:</strong> <span id="view-user-mobile_number"></span></p>
+          <p><strong>Discount:</strong> <span id="view-user-discount"></span>%</p>
+          <p><strong>Referred By:</strong> <span id="view-user-referred_by"></span></p>
+          <p><strong>Role:</strong> <span id="view-user-role"></span></p>
+          <p><strong>Status:</strong> <span id="view-user-status"></span></p>
+          <p><strong>Created On:</strong> <span id="view-user-created_on"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3><i class="fas fa-edit"></i> Edit User</h3>
+        <form id="edit-user-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" id="edit-user-id" name="user_id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="edit-user-email"><i class="fas fa-envelope"></i> Email Address</label>
+              <input type="email" id="edit-user-email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-user-full_name"><i class="fas fa-id-card"></i> Full Name</label>
+              <input type="text" id="edit-user-full_name" name="full_name">
+            </div>
+            <div class="form-group">
+              <label for="edit-user-mobile_number"><i class="fas fa-phone"></i> Mobile Number</label>
+              <input type="text" id="edit-user-mobile_number" name="mobile_number">
+            </div>
+            <div class="form-group">
+              <label for="edit-user-discount"><i class="fas fa-percent"></i> Discount (%)</label>
+              <input type="number" id="edit-user-discount" name="discount" min="0" max="100">
+            </div>
+            <div class="form-group" id="role-group">
+              <label for="edit-user-role"><i class="fas fa-user-tag"></i> Role</label>
+              <select id="edit-user-role" name="role">
+                <option value="student">Student</option>
+                <option value="admin">Admin</option>
+                <option value="main_admin">Main Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-user-status"><i class="fas fa-toggle-on"></i> Status</label>
+              <select id="edit-user-status" name="status">
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="form-group full-width" id="otp-group" style="display: none;">
+              <label for="edit-user-otp"><i class="fas fa-key"></i> OTP</label>
+              <input type="text" id="edit-user-otp" name="otp" placeholder="Enter OTP sent to student's email">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn edit-user-btn"><i class="fas fa-save"></i> Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- View Course Modal -->
+    <div id="view-course-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3><i class="fas fa-book"></i> Course Details</h3>
+        <div class="course-details-grid">
+          <div class="detail-row">
+            <label>ID:</label>
+            <span id="view-course-id"></span>
+          </div>
+          <div class="detail-row">
+            <label>Title:</label>
+            <span id="view-course-title"></span>
+          </div>
+          <div class="detail-row full-width">
+            <label>Description:</label>
+            <span id="view-course-description"></span>
+          </div>
+          <div class="detail-row">
+            <label>Fee:</label>
+            <span id="view-course-fee"></span>
+          </div>
+          <div class="detail-row">
+            <label>Category:</label>
+            <span id="view-course-category"></span>
+          </div>
+          <div class="detail-row">
+            <label>Difficulty Level:</label>
+            <span id="view-course-type"></span>
+          </div>
+          <div class="detail-row full-width">
+            <label>Image:</label>
+            <div class="course-image-container">
+              <img id="view-course-image" src="" alt="Course Image" style="max-width: 300px; max-height: 300px; object-fit: cover;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div id="edit-course-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3><i class="fas fa-edit"></i> Edit Course</h3>
+        <form id="edit-course-form" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" id="edit-course-id" name="course_id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="edit-course-title"><i class="fas fa-book"></i> Course Title</label>
+              <input type="text" id="edit-course-title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-course-fee"><i class="fas fa-rupee-sign"></i> Fee (₹)</label>
+              <input type="number" id="edit-course-fee" name="fee" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-course-category"><i class="fas fa-tags"></i> Category</label>
+              <select id="edit-course-category" name="category" required>
+                <option value="">Select Category</option>
+                <option value="Basic Computing">Basic Computing</option>
+                <option value="Programming">Programming</option>
+                <option value="Data Science & AI">Data Science & AI</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Design & Animation">Design & Animation</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Accounting">Accounting</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-course-type"><i class="fas fa-layer-group"></i> Difficulty Level</label>
+              <select id="edit-course-type" name="type" required>
+                <option value="">Select Level</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label for="edit-course-description"><i class="fas fa-align-left"></i> Course Description</label>
+              <textarea id="edit-course-description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label for="edit-course-image"><i class="fas fa-image"></i> Course Image</label>
+              <input type="file" id="edit-course-image" name="image_file" accept="image/png, image/jpeg, image/jpg">
+              <div id="current-image-container">
+                <p>Current Image:</p>
+                <img id="current-image" src="" alt="Current Course Image" style="max-width: 200px; max-height: 200px;">
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn edit-course-btn"><i class="fas fa-save"></i> Save Changes</button>
+          </div>
+        </form>
+      </div>
+{% endblock %}
+<script>
+    window.urls = {
+        admin_add_user: "{{ url_for('admin.add_user') }}",
+        admin_create_admin: "{{ url_for('admin.create_admin') }}",
+        admin_add_offline_payment: "{{ url_for('admin.add_offline_payment') }}",
+        admin_edit_course: "{{ url_for('admin.admin_edit_course') }}"
+    };
+</script>
