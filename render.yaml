@@ -2,7 +2,10 @@ services:
   - type: web
     name: vidyasetu
     runtime: python3
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      flask db upgrade
+      flask seed-data
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:create_app
     envVars:
       - key: SECRET_KEY
@@ -13,3 +16,5 @@ services:
         value: your-email@gmail.com
       - key: MAIL_PASSWORD
         value: your-email-password
+      - key: FLASK_APP
+        value: app.py
