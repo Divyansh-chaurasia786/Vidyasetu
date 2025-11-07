@@ -27,7 +27,7 @@ def create_app():
     # Fallback for SECRET_KEY
     secret_key = os.getenv("SECRET_KEY")
     if not secret_key:
-        raise ValueError("No SECRET_KEY set for Flask application")
+        secret_key = "dev-secret-key-change-in-production"
     app.secret_key = secret_key
 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI", "sqlite:///vidyasetu.db")
